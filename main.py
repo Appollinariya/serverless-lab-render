@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 from urllib.parse import urlparse
-import psycopg2
+import psycopg
 
 app = Flask(__name__)
 
