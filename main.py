@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 from urllib.parse import urlparse
-import psycopg  # Изменено с psycopg2 на psycopg
+import psycopg
 
 app = Flask(__name__)
 
@@ -60,3 +60,8 @@ def get_messages():
 def close_connection(exception=None):
     # Psycopg3 автоматически управляет соединениями
     pass
+
+# Добавьте запуск приложения
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
