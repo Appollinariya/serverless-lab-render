@@ -1,21 +1,15 @@
 from flask import Flask, request, jsonify
 import os
 from urllib.parse import urlparse
-import psycopg
+import psycopg  # Изменено с psycopg2 на psycopg
 
 app = Flask(__name__)
 
 # Подключение к БД
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
-    url = urlparse(DATABASE_URL)
-    conn = psycopg2.connect(
-        database=url.path[1:],
-        user=url.username,
-        password=url.password,
-        host=url.hostname,
-        port=url.port
-    )
+    # Для psycopg3 просто передаём строку подключения напрямую
+    conn = psycopg.connect(DATABASE_URL)
 else:
     conn = None
 
@@ -29,7 +23,7 @@ if conn:
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
-        conn.commit()
+    conn.commit()  # commit после блока with
 
 @app.route('/')
 def hello():
@@ -45,7 +39,7 @@ def save_message():
 
     with conn.cursor() as cur:
         cur.execute("INSERT INTO messages (content) VALUES (%s)", (message,))
-        conn.commit()
+    conn.commit()
 
     return jsonify({"status": "saved", "message": message})
 
@@ -60,3 +54,9 @@ def get_messages():
 
     messages = [{"id": r[0], "text": r[1], "time": r[2].isoformat()} for r in rows]
     return jsonify(messages)
+
+# Добавьте обработку закрытия соединения
+@app.teardown_appcontext
+def close_connection(exception=None):
+    # Psycopg3 автоматически управляет соединениями
+    pass
